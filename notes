@@ -1,0 +1,24 @@
+Server ip: 10.100.23.147:30000
+ip labplass 1: 10.100.23.221
+238
+UDP:
+Sende en melding: echo -n "Jakon sendte en melding" >/dev/udp/10.100.23.147/20001
+med netcat: echo "hi" | nc -u localhost 8000
+
+Connection that stays on as long as you want:
+netcat -u ip port
+
+listen for incomping UDP messages:
+nc -l -u port
+
+
+ROS:
+#Talker
+export ROS_DOMAIN_ID=42 #For å koble seg på samme topics
+source <YOUR_ROS2_WORKSPACE>/setup.bash
+ros2 run demo_nodes_cpp talker
+
+#Listener
+export ROS_DOMAIN_ID=42 #For å koble seg på samme topics
+source <YOUR_ROS2_WORKSPACE>/setup.bash
+ros2 run demo_nodes_cpp listener

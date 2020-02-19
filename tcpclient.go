@@ -3,36 +3,60 @@ package main
 import (
   "net"
   "fmt"
-  "bufio"
-  "os"
+  "log"
+  "time"
 )
+
+func checkError(err error) {
+	if err != nil {
+		fmt.Println(err)
+	}
+}
 
 func main() {
   // connect to this socket
   hostName := "10.100.23.147"
-  portNum := "34933"
+  portNum := "33546"
 
   service := hostName + ":" + portNum
-  addr, err ResolveTCPAddr("tcp", servce)
-  conn, err := net.Dial("tcp", addr)
+  local_service := "10.100.23.221:9999"
+  remote_addr,_ := net.ResolveTCPAddr("tcp", service)
 
-  if err != nil {
-    log.Fatal(err)
-  }
+  conn, err := net.DialTCP("tcp", nil ,remote_addr)
+  checkError(err)
 
   log.Printf("Established connection to %s \n", service)
   log.Printf("Remote TCP address : %s \n", conn.RemoteAddr().String())
   log.Printf("Local TCP client address : %s \n", conn.LocalAddr().String())
 
-  defer conn.Close()
+  messageIP := "Connect to:" + local_service + "\000"
 
-  message := []byte("Hello UDP server!\000")
+  local_addr, err := net.ResolveTCPAddr("tcp", local_service)
+  checkError(err)
+
+  //listen to local port
+  listener, err := net.ListenTCP("tcp", local_addr)
+  checkError(err)
+
+  //connnection order
+  _, err = conn.Write([]byte(messageIP))
+  checkError(err)
+
+  client_conn, err := listener.AcceptTCP()
+  checkError(err)
 
   for {
-    // send to socket
-    fmt.Fprintf(conn, message)
-    // listen for reply
-    message, _ := bufio.NewReader(conn).ReadString('\n')
-    fmt.Print("Message from server: "+message)
+    // write
+    msg := "cyka blyat"
+    client_conn.Write([]byte(msg))
+
+    // listen
+    bugger := make([]byte,1024)
+    client_conn.Read(bugger)
+
+    message := string(bugger)
+    fmt.Print("Message from server: "+ message)
+
+    time.Sleep(1 * time.Second)
   }
 }
